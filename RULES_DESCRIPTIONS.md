@@ -45,6 +45,7 @@ List of all available rules.
   - [max-public-structs](#max-public-structs)
   - [modifies-parameter](#modifies-parameter)
   - [modifies-value-receiver](#modifies-value-receiver)
+  - [nested-structs](#nested-structs)
   - [package-comments](#package-comments)
   - [range](#range)
   - [range-val-in-closure](#range-val-in-closure)
@@ -66,6 +67,7 @@ List of all available rules.
   - [unreachable-code](#unreachable-code)
   - [unused-parameter](#unused-parameter)
   - [unused-receiver](#unused-receiver)
+  - [useless-break](#useless-break)
   - [waitgroup-by-value](#waitgroup-by-value)
 
 ## add-constant
@@ -134,8 +136,8 @@ _Configuration_: N/A
 
 ## cognitive-complexity
 
-_Description_: [Cognitive complexity](https://www.sonarsource.com/resources/white-papers/cognitive-complexity.html) is a measure of how hard code is to understand. 
-While cyclomatic complexity is good to measure "testeability" of the code, cognitive complexity aims to provide a more precise measure of the difficulty of understanding the code.
+_Description_: [Cognitive complexity](https://www.sonarsource.com/docs/CognitiveComplexity.pdf) is a measure of how hard code is to understand.
+While cyclomatic complexity is good to measure "testability" of the code, cognitive complexity aims to provide a more precise measure of the difficulty of understanding the code.
 Enforcing a maximum complexity per function helps to keep code readable and maintainable.
 
 _Configuration_: (int) the maximum function complexity
@@ -230,7 +232,7 @@ _Description_: It is possible to unintentionally import the same package twice. 
 
 _Configuration_: N/A
 
-### early-return
+## early-return
 
 _Description_: In GO it is idiomatic to minimize nesting statements, a typical example is to avoid if-then-else constructions. This rule spots constructions like
 ```go
@@ -297,7 +299,20 @@ _Description_: Exported function and methods should have comments. This warns on
 
 More information [here](https://github.com/golang/go/wiki/CodeReviewComments#doc-comments)
 
-_Configuration_: N/A
+_Configuration_: ([]string) rule flags. 
+Please notice that without configuration, the default behavior of the rule is that of its `golint` counterpart. 
+Available flags are:
+
+* _checkPrivateReceivers_ enables checking public methods of private types
+* _disableStutteringCheck_ disables checking for method names that stutter with the package name (i.e. avoid failure messages of the form _type name will be used as x.XY by other packages, and that stutters; consider calling this Y_)
+* _sayRepetitiveInsteadOfStutters_ replaces the use of the term _stutters_ by _repetitive_ in failure messages
+
+Example:
+
+```toml
+[rule.exported]
+  arguments =["checkPrivateReceivers","disableStutteringCheck"]
+```
 
 ## file-header
 
@@ -393,7 +408,7 @@ Example:
 [imports-blacklist]
   arguments =["crypto/md5", "crypto/sha1"]
 ```
-### import-shadowing
+## import-shadowing
 
 _Description_: In GO it is possible to declare identifiers (packages, structs, 
 interfaces, parameters, receivers, variables, constants...) that conflict with the 
@@ -441,6 +456,12 @@ _Configuration_: N/A
 
 _Description_: A method that modifies its receiver value can have undesired behavior. The modification can be also the root of a bug because the actual value receiver could be a copy of that used at the calling site.
 This rule warns when a method modifies its receiver.
+
+_Configuration_: N/A
+
+## nested-structs
+
+_Description_: Packages declaring structs that contain other inline struct definitions can be hard to understand/read for other developers.
 
 _Configuration_: N/A
 
@@ -602,6 +623,16 @@ _Configuration_: N/A
 ## unused-receiver
 
 _Description_: This rule warns on unused method receivers. Methods with unused receivers can be a symptom of an unfinished refactoring or a bug.
+
+_Configuration_: N/A
+
+## useless-break
+
+_Description_: This rule warns on useless `break` statements in case clauses of switch and select statements. GO, unlike other programming languages like C, only executes statements of the selected case while ignoring the subsequent case clauses. 
+Therefore, inserting a `break` at the end of a case clause has no effect. 
+
+Because `break` statements are rarely used in case clauses, when switch or select statements are inside a for-loop, the programmer might wrongly assume that a `break` in a case clause will take the control out of the loop.
+The rule emits a specific warning for such cases.
 
 _Configuration_: N/A
 
